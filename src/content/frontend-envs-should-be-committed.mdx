@@ -1,0 +1,34 @@
+---
+title: 'You should commit your env variables to your repository*'
+publishedAt: '2025-10-24'
+summary: 'The hard-rule of never committing your env files actually can make your app more insecure and difficult to build with'
+subtitle: '*sometimes'
+---
+### Why NOT committing your env variables to the repo is usually a good idea
+
+ENV variables are often used to store app configuration as well as sensitive secrets or keys that are needed for your app to run. Obviously we don't want these keys or secrets to be stored in the repository because anyone who has access to the repo will have access. Not great. 
+
+So usually we would add `.env` files to our `.gitignore` and prevent them from being added to the repo. Great. But now how do we actually run our application locally or on a server without these `.env` files? We turn to our colleagues and ask them to share their `.env` files. They help us out by sharing the file on our Slack or Teams. Now our `.env` is sitting in plain-text on some chat thread that may or may not be end-to-end encrypted. How is that any different to storing it in the repo? "But ***I*** don't share my `.env` files in plain-text, ***I*** use a secure shared vault like Bitwarden etc." I hear you shouting into the void. Great, you're doing better than most but what about where that `.env` file is stored? Just plain-text in your project folder. Hopefully you have disk encryption and have a secure local password preventing a stolen, sold or borrowed laptop turning into a full system breach. Ok, you've done all that but now you still have a problem: how do you revoke access once a team member leaves? You can't change all your ENV variables every time someone leaves on the off-chance they may inadvertently or otherwise compromise your secrets and keys? Well actually, you can! This is where key and secret management tools and services like Azure Key Vault or AWS Secrets Manager come in. They allow you to have a central place where your secrets are stored and secured. They also support automatic key or secret rotation for some services and mechanisms to build your own key rotation logic. They also allow your to authenticate users or services to access specific resources and then the key or secret is fetched at run-time allowing for easy revocation of compromised keys.
+
+In an ideal development environment you should be able to clone the repository and get up and running without needing to share credentials from anyone. Each person should only get access to the secrets they need, when they need them and not any longer than that.
+
+Ok, that's all great but if you've gotten this far you're probably looking at the title of this article and wondering "didn't he just say we should be committing our ENV variables to our repos?" Let me explain in the next section.
+
+### Real projects are messy
+
+Real-world projects are often never perfect. The above scenario is actually pretty common. I've worked on many projects where ENV management was definitely not high on the priority list. But it's pretty common knowledge that you should NEVER commit your `.env` files with sensitive credentials to the repo so that's what everyone does but they often omit the next part. This is where I believe a lot of issues can creep in. Because the `.env` files are shared around without any kind of review or oversight this can be a big blind spot for your security coverage.
+
+### The exception
+
+So, with the above being said, why would you actually want to commit your `.env` files to your repo? The answer is for front-end repos that contain ONLY non-sensitive ENV variables. You need to treat your front-end repo as though it is public even if it is set to private, why? Because anything in your front-end repo could end up in the bundle that is served to end-users. So you should NEVER have sensitive information in your front-end `.env` files EVER. When you are working on a team where you review each other's code you should all be looking out for potentially leaked secrets or variables. But how do you do that if your `.env` is not in the repository? The `.env` files get a free pass around pull-requests, static analysis tools and other CI/CD checks you may have in place. When your project is built or deployed those variables need to be stored somewhere or managed somewhere. Who is managing that and what kind of oversight do they have? Are those variables version controlled? How do you roll-back a bad config change?
+
+### But what if...
+
+> "What if someone accidentally puts something sensitive in the `.env` files!"
+Same thing as someone accidentally committing a file with sensitive credentials not already in the `.gitignore`. We reject the PR and make sure to clean up any sensitive info.
+
+> "I manage my front-end variables through my cloud provider or my CI/CD"
+Ok, how do you share your ENV variables with your team and how do you keep it in sync with your CI/CD? This often leads to "it works on my machine" type scenarios because replicating your production or staging front-end environment isn't as easy as cloning the repo and running the project with the right `NODE_ENV` set.
+
+> "But I keep all my front end config on a shared and secured store key store like I do with my backend"
+Good,
