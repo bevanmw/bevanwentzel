@@ -44,7 +44,10 @@ Modern coding agents are really good at "exploring" your codebase. This will all
 One solution for this problem is to constantly add relevant information to your prompt, for example you could have something like this:
 
 ```
-Build a page with a table fetching data from the /users API. Use react-query for data fetching and tanstack-table for the table. Use existing shared UI components in /ui/components. Use API pagination instead of local state-based pagination.
+Build a page with a table fetching data from the /users API.
+Use react-query for data fetching and tanstack-table for the table.
+Use existing shared UI components in /ui/components.
+Use API pagination instead of local state-based pagination.
 ```
 
 The issue with this is you may forget to mention "Use API pagination instead of local-state based pagination" and then the agent ends up using state-based pagination and now you have to spend another iteration on correcting the initial implementation.
@@ -69,11 +72,12 @@ One solution to this problem is to include specific project patterns and common 
 
 At the most basic level a skill is a folder that contains a `SKILL.md` file and optional `scripts/`, `references/` and `assets/` folders. The `SKILL.md` file is a markdown file with a header in this format:
 
-```
+```markdown
 ---
 name: your-skill-name
 description: What it does. Use when user asks to [specific phrases].
 ---
+
 <skill content>
 ```
 
