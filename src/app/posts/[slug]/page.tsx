@@ -107,7 +107,7 @@ export default async function Page({
 
       <hr className="w-full h-0.5 bg-white opacity-50 block mb-8 mt-6" />
 
-      <article className="prose dark:prose-invert prose-lg">
+      <article className="prose dark:prose-invert prose-xl max-w-none">
         <CustomMDX source={post.content} />
       </article>
     </section>

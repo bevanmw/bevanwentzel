@@ -5,7 +5,7 @@ export default function Home() {
   const posts = getBlogPosts();
 
   return (
-    <div className="max-w-xl mx-auto px-4 dark:prose-invert md:my-24 w-full">
+    <div className="max-w-3xl mx-auto px-4 dark:prose-invert md:my-24 w-full">
       <h1 className="text-center text-4xl">Bevan Wentzel</h1>
       <h2 className="text-center">
         Software developer, engineering leader at{" "}

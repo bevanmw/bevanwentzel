@@ -3,6 +3,7 @@ import Image, { ImageProps } from "next/image";
 import { MDXRemote, MDXRemoteProps } from "next-mdx-remote/rsc";
 import React from "react";
 import { codeToHtml } from "@/app/posts/utils";
+import { MermaidDiagram } from "@/components/mermaid-diagram";
 
 function Table({
   data,
@@ -89,6 +90,19 @@ function Super({ children }: { children: React.ReactNode }) {
   return <sup>{children}</sup>;
 }
 
+function Pre(props: React.HTMLAttributes<HTMLPreElement>) {
+  const child = React.Children.only(props.children);
+
+  if (
+    React.isValidElement<{ className?: string }>(child) &&
+    child.props.className === "language-mermaid"
+  ) {
+    return child;
+  }
+
+  return <pre {...props} />;
+}
+
 async function Code({
   className,
   children,
@@ -96,6 +110,10 @@ async function Code({
   className?: string;
   children: string;
 }) {
+  if (className === "language-mermaid") {
+    return <MermaidDiagram chart={children.trim()} />;
+  }
+
   if (!className) {
     return <code>{children}</code>;
   }
@@ -116,6 +134,7 @@ const components = {
   h4: createHeading(4),
   h5: createHeading(5),
   h6: createHeading(6),
+  pre: Pre,
   code: Code,
   sup: Super,
   Image: RoundedImage,

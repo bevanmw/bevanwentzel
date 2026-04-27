@@ -39,6 +39,31 @@ We spoke about the issues with a bloated context but what about a lack of contex
 
 Modern coding agents are really good at "exploring" your codebase. This will allow the agent to find existing patterns and add that to the context. However this has a limit: it can't add the entire codebase to the context so has to be selective about what it includes which means it can miss things. Another problem with "exploring" is this can sometimes fill the context window with incorrect or unnecessary information. This exploration can also go through a lot of tokens which adds additional cost and time.
 
+```mermaid
+flowchart LR
+    subgraph DEV["Developer understanding"]
+        CODE["Codebase"]
+        PRACTICES["Best practices"]
+        PATTERNS["Project patterns"]
+        EXPECTATIONS["Domain expectations"]
+    end
+
+    subgraph LLM["LLM understanding"]
+        FOUND["Explored code"]
+        INFERRED["Inferred patterns"]
+        MISSING["Missing context"]
+    end
+
+    CODE --> FOUND
+    PRACTICES --> INFERRED
+    PATTERNS -. partially discovered .-> INFERRED
+    EXPECTATIONS -. often omitted .-> MISSING
+
+    style DEV fill:#f5efe6,stroke:#3b2f2f,stroke-width:2px,color:#1f1717
+    style LLM fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#172554
+    style MISSING fill:#fecaca,stroke:#b91c1c,stroke-width:2px,color:#7f1d1d
+```
+
 #### Fixing the missing context problem
 
 One solution for this problem is to constantly add relevant information to your prompt, for example you could have something like this:
@@ -59,6 +84,33 @@ Generate database migrations based on the code changes made on this branch.
 ```
 
 In this example we are being rather vague. How do we generate migrations for this project? What ORM are we using, are there any scripts in the project that automate that for us or do we hand-write our migrations? How modern coding agents handle this ambiguity is by exploring your codebase, which uses tokens, time and sometimes more of the context window to figure out how to generate the migrations but sometimes it will get this wrong and miss a step or do too much. This will be another iteration to fix this.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Agent
+    participant Codebase
+    participant Tooling as ORM / Scripts
+
+    User->>Agent: "Gen migrations"
+    Agent->>Agent: Detect ambiguity in the prompt
+    Agent->>Codebase: Inspect package.json, README, AGENTS.md, scripts
+    Codebase-->>Agent: Hints about stack and workflow
+    Agent->>Codebase: Search for schema files, ORM config, prior migrations
+    Codebase-->>Agent: Possible migration patterns
+    Agent->>Tooling: Infer migration command or file format
+    Tooling-->>Agent: ORM CLI, custom script, or manual migration path
+    alt Agent guessed correctly
+        Agent->>Codebase: Generate migration using discovered workflow
+        Codebase-->>Agent: Migration created
+        Agent-->>User: Returns completed migration
+    else Agent guessed incorrectly
+        Agent->>Codebase: Runs wrong command or misses a required step
+        Codebase-->>Agent: Incomplete or incorrect migration
+        Agent-->>User: Returns draft needing correction
+        User->>Agent: Clarifies the exact migration workflow
+    end
+```
 
 #### A single session
 
@@ -86,6 +138,28 @@ The skill content is just plain english instructions that you would normally hav
 The key advantage here is that the skill is only loaded into context by the agent when it is needed preventing the context window from filling with unrelated information when not-needed and hyper-specific information when needed.
 
 The other folders in the skill are used to further segment parts of the skill so that they are not loaded when not needed but can be very specific and detailed.
+
+### With skills
+
+If we revisit the migrations example, a skill can remove most of the guesswork by telling the agent exactly how migrations are generated for this project.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Agent
+    participant Skill as Migration Skill
+    participant Codebase
+    participant Tooling as ORM / Scripts
+
+    User->>Agent: "Generate migrations"
+    Agent->>Skill: Load migration skill
+    Skill-->>Agent: Use drizzle-kit generate and then run verify:migrations
+    Agent->>Codebase: Inspect only the schema and changed files
+    Codebase-->>Agent: Relevant model changes
+    Agent->>Tooling: Run the exact migration workflow from the skill
+    Tooling-->>Agent: Migration created and verified
+    Agent-->>User: Returns completed migration with much less exploration
+```
 
 ## Writing skills
 

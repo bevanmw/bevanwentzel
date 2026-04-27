@@ -25,7 +25,10 @@ const libre = Libre_Baskerville({
 });
 
 export const metadata: Metadata = {
-  title: "Bevan Wentzel Dev Blog",
+  title: {
+    default: "Bevan Wentzel Dev Blog",
+    template: "%s | Bevan Wentzel Dev Blog",
+  },
   description: "Just my thoughts navigating the world of tech",
 };
 
@@ -39,7 +42,7 @@ export default function RootLayout({
       <body
         className={`${cormorant.variable} ${geistMono.variable} ${libre.variable} antialiased`}
       >
-        <nav className="flex justify-between mx-auto max-w-xl py-6 pb-8 px-4 w-full">
+        <nav className="flex justify-between mx-auto max-w-3xl py-6 pb-8 px-4 w-full">
           <Link href="/">
             <p className="text-lg font-bold font-(family-name:--font-libre)">
               Bevan Wentzel
@@ -62,6 +65,7 @@ export default function RootLayout({
             </a>
           </div>
         </nav>
+
         {children}
 
         <footer className="pt-10 pb-8">

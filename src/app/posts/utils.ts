@@ -69,9 +69,13 @@ function isPublished(metadata: Metadata) {
 }
 
 export function getBlogPosts() {
-  return getMDXData(path.join(process.cwd(), "src", "content")).filter((post) =>
-    isPublished(post.metadata),
-  );
+  return getMDXData(path.join(process.cwd(), "src", "content"))
+    .filter((post) => isPublished(post.metadata))
+    .sort(
+      (a, b) =>
+        new Date(b.metadata.publishedAt).getTime() -
+        new Date(a.metadata.publishedAt).getTime(),
+    );
 }
 
 export function formatDate(date: string, includeRelative = false) {

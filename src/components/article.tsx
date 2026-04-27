@@ -12,7 +12,7 @@ export function Article({
   children: React.ReactNode;
 }) {
   return (
-    <article className="prose max-w-xl mx-auto px-4 dark:prose-invert prose-lg">
+    <article className="prose max-w-3xl mx-auto px-4 dark:prose-invert prose-lg">
       <h1 className="mb-2 leading-16">{title}</h1>
       {subtitle ? (
         <h2 className="mb-0 mt-0 text-lg opacity-75">{subtitle}</h2>
