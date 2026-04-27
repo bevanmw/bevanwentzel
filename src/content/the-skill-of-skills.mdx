@@ -162,6 +162,8 @@ sequenceDiagram
 You can use your agent to write skills for you! (there's a skill you can download for writing skills). Here's a great guide from anthropic on writing effective skills:
 [https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf)
 
+These skills can be hyper specific and very detailed. For example you could have a skill the outlines a specific set of commands to run to implement a test case, run it and create a report. You could use a skill for code standards or patterns. The main advantage is that these skills can be as detailed as needed because they will only be included in the context when it actually is needed.
+
 ## Skills as tools
 
 Some agents expose skills as user-exposed tools that can be used as a slash command in the prompt box. So it may be `/your-skill-name` this is useful to force a specific skill to be used and avoid having to type out a prompt and hope the skill gets chosen by the agent.
