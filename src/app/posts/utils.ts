@@ -6,9 +6,10 @@ import { bundledLanguages } from "shiki/bundle/web";
 type Metadata = {
   title: string;
   publishedAt: string;
+  published?: string | boolean;
   summary: string;
   subtitle: string;
-  author: string;
+  author?: string;
   image?: string;
 };
 
@@ -18,13 +19,23 @@ function parseFrontmatter(fileContent: string) {
   const frontMatterBlock = match![1];
   const content = fileContent.replace(frontmatterRegex, "").trim();
   const frontMatterLines = frontMatterBlock.trim().split("\n");
-  const metadata: Partial<Metadata> = {};
+  const metadata: Partial<Record<keyof Metadata, string | boolean>> = {};
 
   frontMatterLines.forEach((line) => {
+    if (!line.includes(":")) {
+      return;
+    }
+
     const [key, ...valueArr] = line.split(": ");
-    let value = valueArr.join(": ").trim();
-    value = value.replace(/^['"](.*)['"]$/, "$1"); // Remove quotes
-    metadata[key.trim() as keyof Metadata] = value;
+    const rawValue = valueArr.join(": ").trim();
+
+    if (!rawValue) {
+      return;
+    }
+
+    const value = rawValue.replace(/^['"](.*)['"]$/, "$1"); // Remove quotes
+    metadata[key.trim() as keyof Metadata] =
+      value === "true" ? true : value === "false" ? false : value;
   });
 
   return { metadata: metadata as Metadata, content };
@@ -53,8 +64,14 @@ function getMDXData(dir: string) {
   });
 }
 
+function isPublished(metadata: Metadata) {
+  return metadata.published !== false && metadata.published !== "false";
+}
+
 export function getBlogPosts() {
-  return getMDXData(path.join(process.cwd(), "src", "content"));
+  return getMDXData(path.join(process.cwd(), "src", "content")).filter((post) =>
+    isPublished(post.metadata),
+  );
 }
 
 export function formatDate(date: string, includeRelative = false) {

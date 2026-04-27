@@ -1,0 +1,105 @@
+---
+title: "The skill of skills"
+publishedAt: "2026-04-27"
+summary: "Effectively using agent skills as a real software engineer"
+subtitle: "Using skills effectively"
+---
+
+AI agents have proven themselves to be invaluable with everyday coding tasks, from basic bug-fixes or small changes to fully-fledged feature implementations and refactors. If you've spent any real time working with AI agents for coding you will quickly pick up on their limitations and shortcomings.
+
+### The Context Window
+
+All LLMs have a limited context window, some are larger than others but this is a fact that we have to deal with. As the context window fills up one will notice the quality of output tends to drop-off, sometimes dramatically. Many agents handle this by summarising, truncating, or compacting context. (to simplify: the entire context is put through another model and summarised). This is usually not controlled by the user and should be avoided.
+
+It is important to remember that the ENTIRE context is sent to the LLM on every request and the ENTIRE context is evaluated to generate a response. This bloat is especially prevalent with reasoning models (most modern LLMs). Long reasoning traces, tool outputs, and prior messages can increase token usage and reduce available context.
+
+So what happens when the context window fills up? Well, we enter what was coined by Dex Horthy as the ["Dumb Zone"](https://www.youtube.com/watch?v=sSeqKe5ZPYY&t=655)
+
+```
+Quality of Output
+     │
+ 100%├────────╮
+     │        │╲
+  80%│        │ ╲
+     │        │  ╲ ← "Lost in the Middle" begins
+  60%│        │   ╲
+     │        │    ╲____
+  40%│        │         ╲___
+     │        │              ╲___
+  20%│        │                   ╲
+     └────────┴───────────────────────► Context Usage %
+           20%   40%   60%   80%  100%
+```
+
+This leads to degraded performance and what we know as "hallucinations".
+
+### Missing Context
+
+We spoke about the issues with a bloated context but what about a lack of context? This is another issue where the user expects the LLM to know something but because it's not in the context it doesn't take it into account for its implementations. Maybe you have a specific pattern in your codebase or expected rule that needs to always be taken into consideration. Maybe you have some domain specific expectations that also need to be included. The frustrating part is you feel as though you need to constantly tell the LLM either repeating instructions or requiring multiple iterations for a task that should be able to be one-shot.
+
+Modern coding agents are really good at "exploring" your codebase. This will allow the agent to find existing patterns and add that to the context. However this has a limit: it can't add the entire codebase to the context so has to be selective about what it includes which means it can miss things. Another problem with "exploring" is this can sometimes fill the context window with incorrect or unnecessary information. This exploration can also go through a lot of tokens which adds additional cost and time.
+
+#### Fixing the missing context problem
+
+One solution for this problem is to constantly add relevant information to your prompt, for example you could have something like this:
+
+```
+Build a page with a table fetching data from the /users API. Use react-query for data fetching and tanstack-table for the table. Use existing shared UI components in /ui/components. Use API pagination instead of local state-based pagination.
+```
+
+The issue with this is you may forget to mention "Use API pagination instead of local-state based pagination" and then the agent ends up using state-based pagination and now you have to spend another iteration on correcting the initial implementation.
+
+Another example would be generating migrations:
+
+```
+Generate database migrations based on the code changes made on this branch.
+```
+
+In this example we are being rather vague. How do we generate migrations for this project? What ORM are we using, are there any scripts in the project that automate that for us or do we hand-write our migrations? How modern coding agents handle this ambiguity is by exploring your codebase, which uses tokens, time and sometimes more of the context window to figure out how to generate the migrations but sometimes it will get this wrong and miss a step or do too much. This will be another iteration to fix this.
+
+#### A single session
+
+Developers quickly notice that the AI "forgets" how to do a specific task after being told and then naively keep a session or context window open so that the AI "remembers" previous instructions but this quickly leads to the context explosion issue that was mentioned before.
+
+#### AGENTS.md
+
+One solution to this problem is to include specific project patterns and common tasks in the AGENTS.md file. This works fairly well in the beginning but this whole file is again appended to the context. This file quickly can bloat with instructions and tips over the course of development. You will notice that we have unrelated instructions in the same files always included in the context (Instructions on how to run migrations are not needed to build a UI component and vice-versa). This leads to bloat and an unfocused context. This is where skills come in.
+
+## What are skills?
+
+At the most basic level a skill is a folder that contains a `SKILL.md` file and optional `scripts/`, `references/` and `assets/` folders. The `SKILL.md` file is a markdown file with a header in this format:
+
+```
+---
+name: your-skill-name
+description: What it does. Use when user asks to [specific phrases].
+---
+<skill content>
+```
+
+The skill content is just plain english instructions that you would normally have in the `AGENTS.md` file.
+
+The key advantage here is that the skill is only loaded into context by the agent when it is needed preventing the context window from filling with unrelated information when not-needed and hyper-specific information when needed.
+
+The other folders in the skill are used to further segment parts of the skill so that they are not loaded when not needed but can be very specific and detailed.
+
+## Writing skills
+
+You can use your agent to write skills for you! (there's a skill you can download for writing skills). Here's a great guide from anthropic on writing effective skills:
+https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf
+
+## Skills as tools
+
+Some agents expose skills as user-exposed tools that can be used as a slash command in the prompt box. So it may be `/your-skill-name` this is useful to force a specific skill to be used and avoid having to type out a prompt and hope the skill gets chosen by the agent.
+
+## Finding and sharing skills
+
+People and agents are writing skills all the time. It can be useful to reuse and install existing skills. https://skills.sh/ is one such source of skills. These can be installed globally on your machine or in the codebase. Codebase specific skills are especially useful because they are automatically available to your coworkers.
+
+### Security considerations
+
+Just like when installing external coding packages, skills should be loaded with care, prompt injection can be a real problem and these skills can make your agent do something that is unexpected. Always check the contents of the skill before installing it (pay attention to the auxiliary files as well not just the `SKILL.md` file). Check out this thread: https://x.com/theonejvo/status/2015892980851474595
+
+## Conclusion
+
+Have you installed or used any skills in your projects? Have you written your own skills and what have you used them for?

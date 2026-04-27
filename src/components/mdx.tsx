@@ -93,9 +93,13 @@ async function Code({
   className,
   children,
 }: {
-  className: string;
+  className?: string;
   children: string;
 }) {
+  if (!className) {
+    return <code>{children}</code>;
+  }
+
   const html = await codeToHtml({
     code: children,
     language: className.replace("language-", ""),
