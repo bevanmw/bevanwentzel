@@ -88,27 +88,23 @@ In this example we are being rather vague. How do we generate migrations for thi
 ```mermaid
 sequenceDiagram
     actor User
-    participant Agent
-    participant Codebase
-    participant Tooling as ORM / Scripts
+    participant AI
+    participant Repo
+    participant CLI
 
-    User->>Agent: "Gen migrations"
-    Agent->>Agent: Detect ambiguity in the prompt
-    Agent->>Codebase: Inspect package.json, README, AGENTS.md, scripts
-    Codebase-->>Agent: Hints about stack and workflow
-    Agent->>Codebase: Search for schema files, ORM config, prior migrations
-    Codebase-->>Agent: Possible migration patterns
-    Agent->>Tooling: Infer migration command or file format
-    Tooling-->>Agent: ORM CLI, custom script, or manual migration path
-    alt Agent guessed correctly
-        Agent->>Codebase: Generate migration using discovered workflow
-        Codebase-->>Agent: Migration created
-        Agent-->>User: Returns completed migration
+    User->>AI: Generate migrations
+    AI->>Repo: Inspect docs and scripts
+    Repo-->>AI: Partial clues
+    AI->>Repo: Search schema and old migrations
+    Repo-->>AI: More clues
+    AI->>CLI: Guess command
+    alt Correct guess
+        CLI-->>AI: Migration created
+        AI-->>User: Return result
     else Agent guessed incorrectly
-        Agent->>Codebase: Runs wrong command or misses a required step
-        Codebase-->>Agent: Incomplete or incorrect migration
-        Agent-->>User: Returns draft needing correction
-        User->>Agent: Clarifies the exact migration workflow
+        CLI-->>AI: Wrong or incomplete output
+        AI-->>User: Needs correction
+        User->>AI: Clarify workflow
     end
 ```
 
@@ -146,19 +142,19 @@ If we revisit the migrations example, a skill can remove most of the guesswork b
 ```mermaid
 sequenceDiagram
     actor User
-    participant Agent
-    participant Skill as Migration Skill
-    participant Codebase
-    participant Tooling as ORM / Scripts
+    participant AI
+    participant Skill
+    participant Repo
+    participant CLI
 
-    User->>Agent: "Generate migrations"
-    Agent->>Skill: Load migration skill
-    Skill-->>Agent: Use drizzle-kit generate and then run verify:migrations
-    Agent->>Codebase: Inspect only the schema and changed files
-    Codebase-->>Agent: Relevant model changes
-    Agent->>Tooling: Run the exact migration workflow from the skill
-    Tooling-->>Agent: Migration created and verified
-    Agent-->>User: Returns completed migration with much less exploration
+    User->>AI: Generate migrations
+    AI->>Skill: Load migration skill
+    Skill-->>AI: Exact command and checks
+    AI->>Repo: Inspect changed schema
+    Repo-->>AI: Relevant changes
+    AI->>CLI: Run known workflow
+    CLI-->>AI: Migration verified
+    AI-->>User: Return result
 ```
 
 ## Writing skills
